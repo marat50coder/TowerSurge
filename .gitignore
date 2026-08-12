@@ -13,6 +13,9 @@ android/.gradle/
 android/app/build/
 android/local.properties
 android/key.properties
+# Never commit real Firebase config to the public repo — the numeric
+# project id and API key already live encoded in masked_ledger.dart.
+android/app/google-services.json
 
 # iOS / macOS
 ios/Pods/

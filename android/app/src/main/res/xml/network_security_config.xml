@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    cleartextTrafficPermitted stays TRUE on base-config because
+    partners routinely deliver push URLs over plain HTTP. Chrome on
+    Android does not block cleartext by default, and the goal of the
+    tide flow is to behave like Chrome. See gray_part_pitfalls.md §17.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

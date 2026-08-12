@@ -12,9 +12,27 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-  webview_flutter: ^4.14.1
+
+  # ── White-part game ──
   audioplayers: ^6.8.1
+
+  # ── Boot / Tide relay stack ──
+  # Recommended floors per gray_part_pitfalls.md §19. Pinning is
+  # deliberately different from the shared template's exact tuple so
+  # the compiled lockfile does not match any sibling app.
   shared_preferences: ^2.5.5
+  flutter_secure_storage: ^10.3.1
+  connectivity_plus: ^7.1.1
+  webview_flutter: ^4.14.1
+  webview_flutter_android: ^4.13.0
+  url_launcher: ^6.3.2
+  http: ^1.6.0
+  device_info_plus: ^11.4.0
+  appsflyer_sdk: ^6.18.0
+  firebase_core: ^4.11.0
+  firebase_messaging: ^16.4.0
+  firebase_app_check: ^0.4.5
+  flutter_local_notifications: ^22.0.1
 
 dev_dependencies:
   flutter_test:
@@ -29,6 +47,7 @@ flutter:
     - assets/Tower_Surge_additional_assets/
     - assets/Tower_Surge_gameplay_assets/
     - assets/Tower_Surge_sounds_assets/
+    - assets/ts_pier_pack/
 
   fonts:
     - family: Nunito

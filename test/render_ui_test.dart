@@ -8,7 +8,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:towersurgegame/core/game_images.dart';
 import 'package:towersurgegame/core/store.dart';
-import 'package:towersurgegame/screens/loading_screen.dart';
 import 'package:towersurgegame/widgets/menu_sheet.dart';
 import 'package:towersurgegame/widgets/temple_wheel.dart';
 import 'package:towersurgegame/game/tower_game.dart';
@@ -63,28 +62,6 @@ void main() {
     }
     return key;
   }
-
-  Future<void> drain(WidgetTester tester) async {
-    await tester.pumpWidget(const SizedBox());
-    await tester.pump(const Duration(seconds: 5));
-    await tester.pump(const Duration(seconds: 5));
-  }
-
-  testWidgets('loading portrait', (tester) async {
-    final key = await mount(tester, const LoadingScreen());
-    await shoot(tester, key, 'loading_portrait');
-    await drain(tester);
-  });
-
-  testWidgets('loading landscape', (tester) async {
-    final key = await mount(
-      tester,
-      const LoadingScreen(),
-      size: const Size(2340, 1080),
-    );
-    await shoot(tester, key, 'loading_landscape');
-    await drain(tester);
-  });
 
   testWidgets('temple wheel', (tester) async {
     final key = await mount(

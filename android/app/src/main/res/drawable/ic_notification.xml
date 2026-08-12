@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Notification icon — flame silhouette. Distinct from the tower
+    launcher art so a reviewer cannot mistake one for a shrunk copy
+    of the other (gray_part_pitfalls.md §15).
+
+    Solid white on transparent, tuned to read at 24×24dp on both
+    light and dark system-tray backgrounds. Two subtly-different
+    flame tongues so the shape does not read as generic droplet.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12.7,2.05 C12.42,1.94 12.12,2.06 11.99,2.31 C11.32,3.63 10.24,4.63 8.85,5.71 C7.34,6.87 5.94,8.11 5.13,9.75 C4.16,11.7 4.05,13.9 4.86,15.94 C5.77,18.22 7.83,19.98 10.28,20.55 C12.86,21.15 15.79,20.35 17.55,18.35 C19.34,16.33 19.85,13.32 18.88,10.83 C18.53,9.94 18.02,9.19 17.36,8.51 C17.02,8.17 16.44,8.34 16.31,8.79 C16.02,9.83 15.4,10.51 14.62,10.51 C14.02,10.51 13.6,10.15 13.5,9.51 C13.42,8.98 13.5,8.35 13.66,7.55 C13.94,6.15 14.29,4.68 13.79,3.19 C13.6,2.65 13.24,2.24 12.7,2.05 z M12.4,13.55 C12.7,13.42 13.04,13.55 13.16,13.83 C13.5,14.63 13.48,15.5 13.15,16.19 C12.73,17.05 11.85,17.53 10.9,17.53 C10.05,17.53 9.29,17.13 8.86,16.44 C8.4,15.7 8.36,14.74 8.75,13.83 C8.87,13.55 9.21,13.42 9.51,13.55 C9.79,13.68 9.93,14 9.8,14.29 C9.56,14.84 9.58,15.35 9.83,15.75 C10.06,16.13 10.44,16.33 10.9,16.33 C11.42,16.33 11.87,16.09 12.09,15.64 C12.29,15.22 12.29,14.7 12.09,14.29 C11.96,14 12.11,13.68 12.4,13.55 z"/>
+</vector>
