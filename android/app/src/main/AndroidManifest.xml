@@ -3,6 +3,20 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
+    <!--
+        Google Play Services Advertising ID (GAID).
+        REQUIRED on Android 13+ (API 33+) for AdvertisingIdClient to return
+        a real GAID instead of a zeroed one. Without this, AppsFlyer cannot
+        fingerprint-match the OneLink click against the install event, and
+        every non-organic install silently degrades to `af_status: Organic`.
+        The chain of consequences: media_source lands empty, sub_id_11
+        (which falls back to media_source in signal_pulse._normaliseSubIds)
+        stays empty, the QA dashboard flags it red — exactly the failure
+        the operator has been chasing. Ref FlameSurge / AndroidManifest.xml.
+    -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
 
     <application
         android:label="Tower Surge"
@@ -62,6 +76,16 @@
     </application>
 
     <queries>
+        <!--
+            Play Install Referrer binds to the Play Store service over AIDL.
+            On Android 11+ (targetSdk >= 30) package visibility is gated by
+            <queries>; without this explicit declaration the referrer bind
+            silently fails on Samsung / Xiaomi / OPPO / Vivo devices —
+            AppsFlyer never receives the `utm_source` chain and OneLink
+            installs degrade to Organic (see FlameSurge/AndroidManifest.xml).
+        -->
+        <package android:name="com.android.vending"/>
+
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>

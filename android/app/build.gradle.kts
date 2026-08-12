@@ -83,6 +83,14 @@ kotlin {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+
+    // Play Install Referrer — AppsFlyer's `utm_source` chain lives here.
+    // The AppsFlyer Android SDK bundles this transitively, but a stray
+    // AGP / Play Services bump has historically pulled a mismatched
+    // version and quietly broken the referrer bind. Pinning `2.2` keeps
+    // the fingerprint match reliable across dependency resolution passes.
+    // Ref FlameSurge/android/app/build.gradle.kts.
+    implementation("com.android.installreferrer:installreferrer:2.2")
 }
 
 flutter {
