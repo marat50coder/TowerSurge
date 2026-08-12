@@ -306,14 +306,21 @@ class _HarborStageState extends State<HarborStage>
         body: Stack(
           fit: StackFit.expand,
           children: <Widget>[
-            // Keep TOP safe-area padding — the status bar / punch-hole
-            // camera cutout would otherwise sit on top of the header
-            // controls on the partner site. Left / right / bottom stay
-            // edge-to-edge because the nav bar is hidden in
-            // `_enterImmersive` and the partner layout drives its own
-            // horizontal safe-area via env(safe-area-inset-*).
+            // Portrait: only the top edge needs padding (status-bar /
+            // punch-hole cutout). Left / right / bottom stay edge-to
+            // edge because the nav bar is hidden in `_enterImmersive`
+            // and the partner site handles horizontal insets via
+            // `env(safe-area-inset-*)`.
+            //
+            // Landscape: some phones (foldables, Samsungs with a hole-
+            // punch on the short edge) push the cutout onto what is
+            // now the LEFT side, and the vertical padding surrenders
+            // the whole art frame — so honour the full viewPadding
+            // (all four sides) in landscape.
             Padding(
-              padding: EdgeInsets.only(top: mq.viewPadding.top),
+              padding: landscape
+                  ? mq.viewPadding
+                  : EdgeInsets.only(top: mq.viewPadding.top),
               child: WebViewWidget(controller: _web),
             ),
             if (_busy && !landscape)

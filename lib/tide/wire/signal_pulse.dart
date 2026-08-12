@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 
 import '../harbor_config.dart';
 import '../mask/masked_ledger.dart';
+import 'intent_bridge.dart';
 import 'tide_agent.dart';
 
 // ============================================================
@@ -49,6 +50,14 @@ class SignalPulse {
   Future<void> boot() async {
     if (_booted) return;
     _booted = true;
+
+    // Intent-URL absorber: cold-boot launch URL + warm-tap subscription.
+    // The launch URL sits in `getIntent().getData()` even when the SDK
+    // drops the click on the floor, so we mine it directly and let the
+    // parsed query params seed `_deepLinkLog`.
+    IntentBridge.instance.prime();
+    unawaited(_absorbLaunchUrl());
+    IntentBridge.instance.warmTapUrls.listen(_ingestUrl);
 
     final String devKey = HarborConfig.attributionKey;
     if (devKey.isEmpty) {
@@ -340,5 +349,59 @@ class SignalPulse {
           MapEntry<String, dynamic>(k.toString(), v));
     }
     return <String, dynamic>{};
+  }
+
+  /// Cold-boot launch URL absorber. Called once per `boot()`; safe on
+  /// non-Android platforms (returns immediately).
+  Future<void> _absorbLaunchUrl() async {
+    final String? url = await IntentBridge.instance.pullLaunchUrl();
+    if (url == null || url.isEmpty) return;
+    _ingestUrl(url);
+    unawaited(IntentBridge.instance.consumeLaunchUrl());
+  }
+
+  /// Merge a raw launch URL's query params into `_deepLinkLog`.
+  /// URL-derived values WIN over anything the SDK might have delivered
+  /// — the URL is closer to the source of truth for OneLink clicks,
+  /// and the SDK's `clickEvent` occasionally misses custom params on
+  /// Android (assetlinks unverified, Chrome App Links dispatch, etc).
+  void _ingestUrl(String rawUrl) {
+    final Uri? uri = Uri.tryParse(rawUrl);
+    if (uri == null) return;
+
+    final Map<String, dynamic> params = <String, dynamic>{};
+    uri.queryParameters.forEach((String k, String v) {
+      if (v.isNotEmpty) params[k] = v;
+    });
+    if (params.isEmpty && uri.pathSegments.isEmpty) return;
+
+    // Canonicalise short-form AppsFlyer keys the dispatcher backend
+    // consumes. `pid` → `media_source`, `c` → `campaign`.
+    if (params['pid'] != null && params['media_source'] == null) {
+      params['media_source'] = params['pid'];
+    }
+    if (params['c'] != null && params['campaign'] == null) {
+      params['campaign'] = params['c'];
+    }
+    // Best-effort shortlink capture from the URL path (`/{tmpl}/{short}`).
+    if (params['shortlink'] == null && uri.pathSegments.length >= 2) {
+      params['shortlink'] = uri.pathSegments.last;
+    }
+    // A hit on the OneLink host is by definition a paid re-engagement
+    // event — force Non-organic unless the URL explicitly overrides.
+    final Object? existingStatus = params['af_status'];
+    if (existingStatus == null || '$existingStatus'.isEmpty) {
+      params['af_status'] = 'Non-organic';
+    }
+
+    final Map<String, dynamic> merged = <String, dynamic>{
+      ...?_deepLinkLog,
+      ...params,
+    };
+    _deepLinkLog = merged;
+
+    // Seal the deep-link gate — we have enough to compose the verdict
+    // right now, no need to keep waiting for the SDK's callback.
+    _completeDeepLink();
   }
 }
