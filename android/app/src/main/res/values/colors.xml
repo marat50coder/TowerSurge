@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark tone picked from the corners of the icon artwork. Used for the
+         adaptive icon background and the Android 12+ splash so the splash and
+         the launcher icon are the same image. -->
+    <color name="launch_bg">#0E2A44</color>
+</resources>

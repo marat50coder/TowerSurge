@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Foreground layer shared by the launcher icon and the Android 12+ splash.
+     The adaptive layer is 108dp, so 15dp is the requested 14% inset: it keeps the
+     whole tower visible under the circle, squircle and teardrop masks without
+     zooming in. Insets are in dp rather than percent because API 26/27 ignore
+     fraction insets. If a mask still clips, raise to 18-20dp; if the art looks
+     too small, drop to 11-13dp. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_launcher_art"
+    android:insetLeft="15dp"
+    android:insetTop="15dp"
+    android:insetRight="15dp"
+    android:insetBottom="15dp" />

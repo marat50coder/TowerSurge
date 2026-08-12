@@ -1,0 +1,19 @@
+Сделай launcher-иконку и Android 12+ splash так, чтобы арт из 
+@assets/…/icon2.png был полностью виден под любой маской (Pixel-круг, 
+squircle, teardrop) и splash совпадал с иконкой на рабочем столе.
+Схема: и mipmap-anydpi-v26/ic_launcher.xml, и drawable-anydpi-v26/
+ic_splash_logo.xml делай одинаковыми <adaptive-icon> с
+  background = @color/launch_bg (тёмный тон под цвет углов icon2)
+  foreground = <inset icon2 14%>
+Splash подключи через values-v31/styles.xml (+night) — 
+windowSplashScreenBackground и windowSplashScreenAnimatedIcon.
+Ключевые грабли:
+  • Android 12+ splash принимает ТОЛЬКО AdaptiveIconDrawable, плоский 
+    PNG молча откатывается на launcher-icon → выглядит клипнуто.
+  • flutter_launcher_icons по умолчанию кладёт icon2 в background 
+    edge-to-edge → круговая маска съедает углы шилда. Не полагайся 
+    на его дефолт, перепиши mipmap xml руками.
+  • Inset 14% — стартовое значение. Мало (обрезает) — подними до 
+    17-19%. Много (мелко) — опусти до 10-12%.
+Почисти мёртвые ic_launcher_background/foreground PNG из drawable-*.
+APK не собирай — я сам.

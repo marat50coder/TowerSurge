@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hand written on purpose: flutter_launcher_icons puts the artwork edge to
+     edge in the background layer, where every launcher mask crops it. Instead
+     the artwork is inset in the foreground so the whole tower stays visible. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/launch_bg" />
+    <foreground android:drawable="@drawable/ic_launcher_fg" />
+</adaptive-icon>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Splash for Android 11 and older, matched to the Android 12+ one. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/launch_bg" />
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/ic_splash_legacy" />
+    </item>
+</layer-list>

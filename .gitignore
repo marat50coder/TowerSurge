@@ -1,0 +1,36 @@
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+.pub-cache/
+.pub/
+pubspec.lock
+
+# Android
+android/.gradle/
+android/app/build/
+android/local.properties
+android/key.properties
+
+# iOS / macOS
+ios/Pods/
+*.xcworkspace
+.symlinks/
+macos/Pods/
+
+# Keystore (never commit the private key itself – key.properties is also
+# excluded above so secrets stay off the remote).
+*.jks
+*.keystore
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# macOS
+.DS_Store
