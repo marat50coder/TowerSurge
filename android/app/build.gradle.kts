@@ -84,6 +84,21 @@ kotlin {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 
+    // Google Play Services Ads Identifier (aka AdvertisingIdClient).
+    // Pinned EXPLICITLY rather than relying on transitive resolution from
+    // the AppsFlyer plugin — on OEM ROMs (Realme UI, MIUI, ColorOS) and
+    // on newer AGP builds that dedupe overlapping Play Services artifacts,
+    // this class routinely drops off the classpath. When that happens
+    // `AdvertisingIdClient.getAdvertisingIdInfo()` throws
+    // `ClassNotFoundException`, GAID is returned as a zeroed value,
+    // AppsFlyer's fingerprint match collapses, and every non-organic
+    // OneLink install misclassifies as Organic. Chain of consequences on
+    // the QA dashboard: `af_status=Organic` → empty `media_source` →
+    // `sub_id_11` fallback empty → RED. Adding this line + the AD_ID
+    // permission in AndroidManifest is what unblocks the last sub_id.
+    // Ref FlameSurge/android/app/build.gradle.kts (line 99).
+    implementation("com.google.android.gms:play-services-ads-identifier:18.1.0")
+
     // Play Install Referrer — AppsFlyer's `utm_source` chain lives here.
     // The AppsFlyer Android SDK bundles this transitively, but a stray
     // AGP / Play Services bump has historically pulled a mismatched
