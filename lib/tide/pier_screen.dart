@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 
 import '../core/game_images.dart';
 import '../core/palette.dart';
-import '../core/sfx.dart';
 import '../screens/game_screen.dart';
 import 'berth.dart';
 import 'stage/adrift_stage.dart';
@@ -65,7 +64,8 @@ class _PierScreenState extends State<PierScreen> {
   void initState() {
     super.initState();
     _clock.start();
-    Sfx.i.music(Sfx.bgmMenu, volume: 0.22);
+    // No music during the tide/gray boot flow — the game screen boots
+    // its own soundtrack when (and only when) it takes over.
     _tick = Timer.periodic(const Duration(milliseconds: 16), _pulse);
     _drive();
   }

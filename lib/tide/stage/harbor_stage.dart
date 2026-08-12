@@ -104,9 +104,12 @@ class _HarborStageState extends State<HarborStage>
   }
 
   void _enterImmersive() {
+    // Hide the Android nav bar entirely while the WebView is on screen
+    // — the partner site provides its own in-page navigation, so the
+    // 3-button / gesture chrome is dead weight and only clips content.
     SystemChrome.setEnabledSystemUIMode(
-      SystemUiMode.manual,
-      overlays: const <SystemUiOverlay>[SystemUiOverlay.bottom],
+      SystemUiMode.immersiveSticky,
+      overlays: const <SystemUiOverlay>[],
     );
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -289,8 +292,8 @@ class _HarborStageState extends State<HarborStage>
 
   @override
   Widget build(BuildContext context) {
-    final MediaQueryData mq = MediaQuery.of(context);
-    final bool landscape = mq.orientation == Orientation.landscape;
+    final bool landscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
 
     return PopScope(
       canPop: false,
@@ -303,10 +306,11 @@ class _HarborStageState extends State<HarborStage>
         body: Stack(
           fit: StackFit.expand,
           children: <Widget>[
-            Padding(
-              padding: mq.viewPadding,
-              child: WebViewWidget(controller: _web),
-            ),
+            // No safe-area padding — the WebView fills the whole
+            // screen so the partner's own layout drives the safe
+            // insets via `env(safe-area-inset-*)` (installed by
+            // PageEnhancers).
+            WebViewWidget(controller: _web),
             if (_busy && !landscape)
               const ColoredBox(
                 color: Color(0x88000000),

@@ -87,9 +87,33 @@ class SignalPulse {
     });
 
     sdk.onDeepLinking((DeepLinkResult result) {
-      final Map<String, dynamic>? click = result.deepLink?.clickEvent;
-      if (click != null) {
-        _deepLinkLog = Map<String, dynamic>.from(click);
+      final DeepLink? dl = result.deepLink;
+      if (dl != null) {
+        final Map<String, dynamic> merged = <String, dynamic>{};
+        final Map<String, dynamic> click = dl.clickEvent;
+        merged.addAll(click);
+        // Explicitly surface the typed getters — some partner OneLinks
+        // deliver these through the DeepLink object but omit them from
+        // the raw clickEvent map on Android.
+        void put(String k, dynamic v) {
+          if (v == null) return;
+          final String s = '$v';
+          if (s.isEmpty || s == 'null') return;
+          merged[k] = v;
+        }
+        put('deep_link_value', dl.deepLinkValue);
+        put('match_type', dl.matchType);
+        put('media_source', dl.mediaSource);
+        put('campaign', dl.campaign);
+        put('campaign_id', dl.campaignId);
+        put('is_deferred', dl.isDeferred);
+        put('click_http_referrer', dl.clickHttpReferrer);
+        put('af_sub1', dl.afSub1);
+        put('af_sub2', dl.afSub2);
+        put('af_sub3', dl.afSub3);
+        put('af_sub4', dl.afSub4);
+        put('af_sub5', dl.afSub5);
+        _deepLinkLog = merged;
       }
       _completeDeepLink();
     });
@@ -133,19 +157,45 @@ class SignalPulse {
     }
   }
 
-  /// Assemble the verdict request body. Order matters — see the
-  /// backend contract in the docs.
+  /// Assemble the verdict request body. Order matters — the merge
+  /// resolves conflicts as `deep_link > install > appOpen`, which
+  /// is what the backend contract expects for OneLink installs.
   Future<Map<String, dynamic>> compose({
     required String locale,
     String? pushToken,
   }) async {
     final Map<String, dynamic> body = <String, dynamic>{};
 
+    // Install-conversion is the baseline — includes it even when
+    // some fields are empty strings so nothing gets silently dropped.
     if (_installLog != null) body.addAll(_installLog!);
-    _deepLinkLog?.forEach(
-        (String k, dynamic v) => body.putIfAbsent(k, () => v));
-    _appOpenLog?.forEach(
-        (String k, dynamic v) => body.putIfAbsent(k, () => v));
+
+    // Deep-link WINS over install for non-empty values (was
+    // `putIfAbsent` before — that allowed a stale empty install value
+    // to block a real OneLink sub_id from reaching the backend).
+    _deepLinkLog?.forEach((String k, dynamic v) {
+      if (v == null) return;
+      final String s = '$v';
+      if (s.isEmpty || s == 'null') return;
+      body[k] = v;
+    });
+
+    // App-open payload only fills gaps, never overwrites.
+    _appOpenLog?.forEach((String k, dynamic v) {
+      if (v == null) return;
+      final String s = '$v';
+      if (s.isEmpty || s == 'null') return;
+      body.putIfAbsent(k, () => v);
+    });
+
+    // Also unpack a query-string-shaped `deep_link_value`. Partners
+    // often pack the sub_ids into it as `sub_id_1=..&sub_id_11=..`.
+    _unpackDeepLinkValue(body);
+
+    // Normalise sub_id_1..sub_id_11 so the backend always sees the
+    // full ladder regardless of which AppsFlyer field the partner
+    // chose to route them through.
+    _normaliseSubIds(body);
 
     body['af_id'] = await deviceUid() ?? '';
     body['bundle_id'] = HarborConfig.applicationId;
@@ -167,6 +217,51 @@ class SignalPulse {
       return true;
     }());
     return body;
+  }
+
+  /// If `deep_link_value` is a query-string blob (`sub_id_11=x&…`),
+  /// split it and merge each key into `body`. Deep-link value wins
+  /// over what's already there (it's the closest thing to source of
+  /// truth for OneLink click params).
+  static void _unpackDeepLinkValue(Map<String, dynamic> body) {
+    final dynamic raw = body['deep_link_value'];
+    if (raw is! String || raw.isEmpty) return;
+    if (!raw.contains('=')) return;
+    for (final String pair in raw.split('&')) {
+      final int eq = pair.indexOf('=');
+      if (eq <= 0) continue;
+      final String k = Uri.decodeQueryComponent(pair.substring(0, eq));
+      final String v = Uri.decodeQueryComponent(pair.substring(eq + 1));
+      if (k.isEmpty || v.isEmpty) continue;
+      body[k] = v;
+    }
+  }
+
+  /// Emits `sub_id_1..sub_id_11` in the body based on the first
+  /// non-empty source in this priority order:
+  ///   `sub_id_N` (already present) → `af_subN` (AppsFlyer standard,
+  ///   1..5 only) → `deep_link_subN` (UDL deferred, 1..10 only).
+  static void _normaliseSubIds(Map<String, dynamic> body) {
+    for (int i = 1; i <= 11; i++) {
+      final String target = 'sub_id_$i';
+      if (_nonEmpty(body[target])) continue;
+      final Object? afSub = i <= 5 ? body['af_sub$i'] : null;
+      if (_nonEmpty(afSub)) {
+        body[target] = afSub;
+        continue;
+      }
+      final Object? dlSub = i <= 10 ? body['deep_link_sub$i'] : null;
+      if (_nonEmpty(dlSub)) {
+        body[target] = dlSub;
+        continue;
+      }
+    }
+  }
+
+  static bool _nonEmpty(Object? v) {
+    if (v == null) return false;
+    final String s = '$v';
+    return s.isNotEmpty && s != 'null';
   }
 
   Future<Map<String, dynamic>?> _gcdRescue() async {

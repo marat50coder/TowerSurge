@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 
-import '../harbor_config.dart';
 import '../mask/masked_ledger.dart';
 
 // ============================================================
@@ -18,9 +17,11 @@ import '../mask/masked_ledger.dart';
 //     `wv`, or the application id as Dart string literals.
 //   • Be identical between the HTTP client and the WebView.
 //
-// GAME THEME CATEGORY: slot  (partner requires the identity in-band;
-//                             appid/appname suffix present, all
-//                             tokens encoded via masked_ledger)
+// GAME THEME CATEGORY: clean Chrome UA — no appid/appname suffix.
+// The partner backend reads the bundle_id from the JSON body of the
+// verdict POST instead of from the UA string, so keeping the UA
+// indistinguishable from a stock browser reduces the fingerprint
+// surface picked up by Play Integrity heuristics.
 //
 // Every browser-identity substring lives in `masked_ledger.dart` as
 // an encoded byte array — see .cursor/rules/gray_user_agent.mdc.
@@ -90,18 +91,11 @@ class FingerprintTag {
     final String safariLabel =
         _preferEncoded(unwrapUaMobileSafari(), _seedSafariLabel);
 
-    final String base = '$product $openPlatform $release; $brand $model'
+    return '$product $openPlatform $release; $brand $model'
         '$buildLabel$buildTag$closePlatform'
         '$engineLabel$webkit$engineTail'
         '$chromeLabel$chrome'
         '$safariLabel$webkit';
-
-    final String appIdToken = unwrapUaAppIdToken();
-    if (appIdToken.isEmpty) return base;
-    final String appName = unwrapAppName();
-    final String appNameToken = unwrapUaAppNameToken();
-    return '$base $appIdToken${HarborConfig.applicationId} '
-        '$appNameToken$appName';
   }
 
   // ── iOS UA assembly (cross-project safety) ───────────────────

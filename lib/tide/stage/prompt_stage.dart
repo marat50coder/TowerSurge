@@ -90,29 +90,23 @@ class _PromptStageState extends State<PromptStage> {
             left: 0,
             right: 0,
             bottom: size.height * (landscape ? 0.07 : 0.09),
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: mq.viewPadding.left,
-                right: mq.viewPadding.right,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  TideButton(
-                    label: 'Accept',
-                    width: primaryWidth,
-                    onTap: _accept,
-                  ),
-                  SizedBox(height: landscape ? 10 : 14),
-                  TideButton(
-                    label: 'Skip',
-                    kind: TideButtonKind.dusk,
-                    compact: true,
-                    width: secondaryWidth,
-                    onTap: _skip,
-                  ),
-                ],
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                TideButton(
+                  label: 'Accept',
+                  width: primaryWidth,
+                  onTap: _accept,
+                ),
+                SizedBox(height: landscape ? 10 : 14),
+                TideButton(
+                  label: 'Skip',
+                  kind: TideButtonKind.dusk,
+                  compact: true,
+                  width: secondaryWidth,
+                  onTap: _skip,
+                ),
+              ],
             ),
           ),
         ],

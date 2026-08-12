@@ -39,9 +39,11 @@ class _AdriftStageState extends State<AdriftStage> {
         ? PierAssets.horizontalOffline
         : PierAssets.verticalOffline;
 
-    final double buttonWidth = landscape
-        ? size.width * 0.34
-        : size.width * 0.66.clamp(220, 380);
+    // NoWiFi CTA — shrunk 15% on each side (30% total) per design
+    // pass. Landscape kept narrow already, portrait now sits at 70%
+    // of the screen width instead of stretching edge-to-edge.
+    final double buttonWidth =
+        landscape ? size.width * 0.34 : size.width * 0.70;
 
     return Scaffold(
       backgroundColor: P.skyTop,
@@ -62,28 +64,22 @@ class _AdriftStageState extends State<AdriftStage> {
             left: 0,
             right: 0,
             bottom: size.height * (landscape ? 0.10 : 0.09),
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: mq.viewPadding.left,
-                right: mq.viewPadding.right,
-              ),
-              child: Center(
-                child: _spin
-                    ? const SizedBox(
-                        width: 34,
-                        height: 34,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(P.gold),
-                        ),
-                      )
-                    : TideButton(
-                        label: 'Retry',
-                        width: buttonWidth,
-                        onTap: _retry,
+            child: Center(
+              child: _spin
+                  ? const SizedBox(
+                      width: 34,
+                      height: 34,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(P.gold),
                       ),
-              ),
+                    )
+                  : TideButton(
+                      label: 'Retry',
+                      width: buttonWidth,
+                      onTap: _retry,
+                    ),
             ),
           ),
         ],
