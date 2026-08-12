@@ -66,10 +66,13 @@ class _PromptStageState extends State<PromptStage> {
         ? PierAssets.horizontalNotifications
         : PierAssets.verticalNotifications;
 
+    // Landscape (Horizontal_Notifications_Screen) — buttons shrunk
+    // 20% to match the tighter frame in the horizontal art.
+    // Portrait keeps the wider grip.
     final double primaryWidth =
-        landscape ? size.width * 0.34 : size.width * 0.70;
+        landscape ? size.width * 0.34 * 0.80 : size.width * 0.70;
     final double secondaryWidth =
-        landscape ? size.width * 0.34 : size.width * 0.70;
+        landscape ? size.width * 0.34 * 0.80 : size.width * 0.70;
 
     return Scaffold(
       backgroundColor: P.skyTop,

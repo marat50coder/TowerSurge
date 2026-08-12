@@ -292,8 +292,8 @@ class _HarborStageState extends State<HarborStage>
 
   @override
   Widget build(BuildContext context) {
-    final bool landscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
+    final MediaQueryData mq = MediaQuery.of(context);
+    final bool landscape = mq.orientation == Orientation.landscape;
 
     return PopScope(
       canPop: false,
@@ -306,11 +306,16 @@ class _HarborStageState extends State<HarborStage>
         body: Stack(
           fit: StackFit.expand,
           children: <Widget>[
-            // No safe-area padding — the WebView fills the whole
-            // screen so the partner's own layout drives the safe
-            // insets via `env(safe-area-inset-*)` (installed by
-            // PageEnhancers).
-            WebViewWidget(controller: _web),
+            // Keep TOP safe-area padding — the status bar / punch-hole
+            // camera cutout would otherwise sit on top of the header
+            // controls on the partner site. Left / right / bottom stay
+            // edge-to-edge because the nav bar is hidden in
+            // `_enterImmersive` and the partner layout drives its own
+            // horizontal safe-area via env(safe-area-inset-*).
+            Padding(
+              padding: EdgeInsets.only(top: mq.viewPadding.top),
+              child: WebViewWidget(controller: _web),
+            ),
             if (_busy && !landscape)
               const ColoredBox(
                 color: Color(0x88000000),

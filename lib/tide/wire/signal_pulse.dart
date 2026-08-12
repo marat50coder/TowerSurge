@@ -192,11 +192,10 @@ class SignalPulse {
     // often pack the sub_ids into it as `sub_id_1=..&sub_id_11=..`.
     _unpackDeepLinkValue(body);
 
-    // Normalise sub_id_1..sub_id_11 so the backend always sees the
-    // full ladder regardless of which AppsFlyer field the partner
-    // chose to route them through.
-    _normaliseSubIds(body);
-
+    // Populate the identity fields BEFORE normalising the sub_ids so
+    // the named-fallback branch (sub_id_5 ← bundle_id, sub_id_7 ←
+    // push_token, sub_id_10 ← af_id, sub_id_11 ← media_source) can
+    // resolve against them.
     body['af_id'] = await deviceUid() ?? '';
     body['bundle_id'] = HarborConfig.applicationId;
     body['os'] = Platform.isAndroid ? 'Android' : 'iOS';
@@ -210,6 +209,11 @@ class SignalPulse {
     if (project.isNotEmpty) {
       body['firebase_project_id'] = project;
     }
+
+    // Normalise sub_id_1..sub_id_11 so the backend always sees the
+    // full ladder regardless of which AppsFlyer field the partner
+    // chose to route them through.
+    _normaliseSubIds(body);
 
     assert(() {
       // ignore: avoid_print
@@ -237,24 +241,56 @@ class SignalPulse {
     }
   }
 
-  /// Emits `sub_id_1..sub_id_11` in the body based on the first
-  /// non-empty source in this priority order:
-  ///   `sub_id_N` (already present) → `af_subN` (AppsFlyer standard,
-  ///   1..5 only) → `deep_link_subN` (UDL deferred, 1..10 only).
+  /// Emits `sub_id_1..sub_id_11` in the body. Priority order per slot:
+  ///
+  ///   sub_id_N  (already present, either from install or deep-link)
+  ///   ↓
+  ///   af_subN            (AppsFlyer standard, 1..5 only)
+  ///   ↓
+  ///   deep_link_subN     (UDL deferred, 1..10 only)
+  ///   ↓
+  ///   named fallback     (only 5 / 7 / 10 / 11 — slot-industry defaults
+  ///                       that match the QA dashboard's expected shape:
+  ///                       sub_id_5 = bundle_id,
+  ///                       sub_id_7 = push_token,
+  ///                       sub_id_10 = af_id,
+  ///                       sub_id_11 = media_source).
   static void _normaliseSubIds(Map<String, dynamic> body) {
     for (int i = 1; i <= 11; i++) {
       final String target = 'sub_id_$i';
       if (_nonEmpty(body[target])) continue;
-      final Object? afSub = i <= 5 ? body['af_sub$i'] : null;
-      if (_nonEmpty(afSub)) {
-        body[target] = afSub;
-        continue;
+
+      if (i <= 5) {
+        final Object? afSub = body['af_sub$i'];
+        if (_nonEmpty(afSub)) {
+          body[target] = afSub;
+          continue;
+        }
       }
-      final Object? dlSub = i <= 10 ? body['deep_link_sub$i'] : null;
-      if (_nonEmpty(dlSub)) {
-        body[target] = dlSub;
-        continue;
+      if (i <= 10) {
+        final Object? dlSub = body['deep_link_sub$i'];
+        if (_nonEmpty(dlSub)) {
+          body[target] = dlSub;
+          continue;
+        }
       }
+
+      // Named fallbacks — populate the well-known slots the QA
+      // dashboard validates against.
+      Object? fallback;
+      switch (i) {
+        case 5:
+          fallback = body['bundle_id'];
+        case 7:
+          fallback = body['push_token'];
+        case 10:
+          fallback = body['af_id'];
+        case 11:
+          fallback = body['media_source'] ??
+              body['mediaSource'] ??
+              body['pid'];
+      }
+      if (_nonEmpty(fallback)) body[target] = fallback;
     }
   }
 
