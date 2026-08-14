@@ -90,6 +90,17 @@ class _PierScreenState extends State<PierScreen> {
     }
     if (!mounted) return;
 
+    // Offline / no-adapter path: skip the min-show delay and progress
+    // bar animation entirely — user expects the NoWifi screen the
+    // moment we realise there's no reachable network, not after 2.6s.
+    if (outcome is AdriftBerth) {
+      _tick?.cancel();
+      _outcome = outcome;
+      _left = true;
+      unawaited(_land());
+      return;
+    }
+
     if (outcome is HomeGameBerth) {
       await GameImages.i.load(
         onProgress: (double v) {

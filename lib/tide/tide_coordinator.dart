@@ -73,9 +73,22 @@ class TideCoordinator {
 
     chime.onTokenRotate = _reruleOnTokenRotate;
 
+    // Raise the FCM channel FIRST so `getInitialMessage()` runs, its
+    // callback populates the in-memory cold-tap URL, and the message
+    // listeners are wired for the rest of the session. Doing this
+    // before the routing switch also means a pending URL stashed by
+    // a previous session's warm-tap is now guaranteed to be readable
+    // before the switch, and this session's cold-tap URL doesn't get
+    // lost to a race with the secure-storage write.
+    try {
+      await chime.raise();
+    } catch (_) {}
+
     // A cold-boot push tap wins over any cached state.
-    final String? coldUrl = await LaunchNote.consume(store);
-    if (coldUrl != null && coldUrl.isNotEmpty) {
+    final String coldTap = chime.consumeColdTapUrl() ?? '';
+    final String stashed = (await LaunchNote.consume(store)) ?? '';
+    final String coldUrl = coldTap.isNotEmpty ? coldTap : stashed;
+    if (coldUrl.isNotEmpty) {
       await store.assignRoute(RoutingMemory.harbor);
       unawaited(_fireAndForget());
       onProgress(1);
@@ -123,6 +136,10 @@ class TideCoordinator {
     if (!await pulse.hasAdapter()) {
       return const AdriftBerth(returnsToGame: false);
     }
+    // `chime.raise()` is already awaited at the top of `_decide`, so
+    // the FCM listeners are wired even when this path returns the
+    // cached URL early. No additional call needed here — the
+    // duplicate would be a no-op (idempotent guard inside `raise`).
     final String? pending = await store.consumePendingUrl();
     if (pending != null && pending.isNotEmpty) {
       onProgress(1);

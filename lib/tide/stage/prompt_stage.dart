@@ -67,12 +67,13 @@ class _PromptStageState extends State<PromptStage> {
         : PierAssets.verticalNotifications;
 
     // Landscape (Horizontal_Notifications_Screen) — buttons shrunk
-    // 20% to match the tighter frame in the horizontal art.
+    // twice by 20% to match the tighter frame in the horizontal art
+    // (0.34 -> * .80 first pass -> * .80 second pass = 0.2176).
     // Portrait keeps the wider grip.
     final double primaryWidth =
-        landscape ? size.width * 0.34 * 0.80 : size.width * 0.70;
+        landscape ? size.width * 0.34 * 0.80 * 0.80 : size.width * 0.70;
     final double secondaryWidth =
-        landscape ? size.width * 0.34 * 0.80 : size.width * 0.70;
+        landscape ? size.width * 0.34 * 0.80 * 0.80 : size.width * 0.70;
 
     return Scaffold(
       backgroundColor: P.skyTop,
@@ -93,24 +94,44 @@ class _PromptStageState extends State<PromptStage> {
             left: 0,
             right: 0,
             bottom: size.height * (landscape ? 0.07 : 0.09),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                TideButton(
-                  label: 'Accept',
-                  width: primaryWidth,
-                  onTap: _accept,
-                ),
-                SizedBox(height: landscape ? 10 : 14),
-                TideButton(
-                  label: 'Skip',
-                  kind: TideButtonKind.dusk,
-                  compact: true,
-                  width: secondaryWidth,
-                  onTap: _skip,
-                ),
-              ],
-            ),
+            child: landscape
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      TideButton(
+                        label: 'Accept',
+                        width: primaryWidth,
+                        onTap: _accept,
+                      ),
+                      const SizedBox(width: 16),
+                      TideButton(
+                        label: 'Skip',
+                        kind: TideButtonKind.dusk,
+                        compact: true,
+                        width: secondaryWidth,
+                        onTap: _skip,
+                      ),
+                    ],
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      TideButton(
+                        label: 'Accept',
+                        width: primaryWidth,
+                        onTap: _accept,
+                      ),
+                      const SizedBox(height: 14),
+                      TideButton(
+                        label: 'Skip',
+                        kind: TideButtonKind.dusk,
+                        compact: true,
+                        width: secondaryWidth,
+                        onTap: _skip,
+                      ),
+                    ],
+                  ),
           ),
         ],
       ),

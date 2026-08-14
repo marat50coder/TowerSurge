@@ -29,8 +29,8 @@ abstract final class HarborConfig {
   // to a "round" value — round numbers cluster across apps.
 
   /// Snooze for the push-permission stage when the user chose Skip.
-  /// Range: 172800..604800 (2..7 days). Value here: 4 days.
-  static const int permissionSnoozeSeconds = 345600;
+  /// Range: 172800..604800 (2..7 days). Value here: 3 days.
+  static const int permissionSnoozeSeconds = 259200;
 
   /// Delay before AppsFlyer's Organic-false-positive rescue call.
   /// Range: 4..12 seconds.

@@ -294,6 +294,26 @@ class _HarborStageState extends State<HarborStage>
   Widget build(BuildContext context) {
     final MediaQueryData mq = MediaQuery.of(context);
     final bool landscape = mq.orientation == Orientation.landscape;
+    // Honour the top rim in both orientations (status bar / notch /
+    // punch-hole) plus the two side rims in landscape (camera cutouts
+    // on foldables and hole-punch phones tipped on their side).
+    //
+    // BOTTOM MUST BE ZERO in both orientations. A non-zero bottom
+    // padding lifts the WebView off the physical screen bottom, and
+    // Chromium then shrinks `visualViewport` by only the "keyboard
+    // height inside the WebView" (a smaller number). The keyboard
+    // shim's `scrollIntoView` lands the input above that smaller
+    // area, leaving a visible dark gap between the input and the
+    // actual keyboard — the exact bug the user reported for
+    // landscape. Zero bottom keeps the WebView flush with the
+    // physical screen bottom so `scrollIntoView` glues the input
+    // right on top of the keyboard in both orientations. See
+    // FlameSurge/portal_shell for the reference implementation.
+    final EdgeInsets webPadding = EdgeInsets.only(
+      top: mq.viewPadding.top,
+      left: landscape ? mq.viewPadding.left : 0,
+      right: landscape ? mq.viewPadding.right : 0,
+    );
 
     return PopScope(
       canPop: false,
@@ -306,21 +326,8 @@ class _HarborStageState extends State<HarborStage>
         body: Stack(
           fit: StackFit.expand,
           children: <Widget>[
-            // Portrait: only the top edge needs padding (status-bar /
-            // punch-hole cutout). Left / right / bottom stay edge-to
-            // edge because the nav bar is hidden in `_enterImmersive`
-            // and the partner site handles horizontal insets via
-            // `env(safe-area-inset-*)`.
-            //
-            // Landscape: some phones (foldables, Samsungs with a hole-
-            // punch on the short edge) push the cutout onto what is
-            // now the LEFT side, and the vertical padding surrenders
-            // the whole art frame — so honour the full viewPadding
-            // (all four sides) in landscape.
             Padding(
-              padding: landscape
-                  ? mq.viewPadding
-                  : EdgeInsets.only(top: mq.viewPadding.top),
+              padding: webPadding,
               child: WebViewWidget(controller: _web),
             ),
             if (_busy && !landscape)

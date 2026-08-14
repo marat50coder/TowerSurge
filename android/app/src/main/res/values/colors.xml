@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Dark tone picked from the corners of the icon artwork. Used for the
-         adaptive icon background and the Android 12+ splash so the splash and
-         the launcher icon are the same image. -->
-    <color name="launch_bg">#0E2A44</color>
+    <!-- Sampled from the icon's upper sky region so the Android 12+ splash
+         backdrop (visible in the launcher-mask corners while the animated
+         icon is drawn) blends into the artwork instead of looking like a
+         hard dark frame. The launcher icon itself no longer uses this color
+         at all — the art now fills the entire adaptive-icon background. -->
+    <color name="launch_bg">#62888E</color>
 </resources>
